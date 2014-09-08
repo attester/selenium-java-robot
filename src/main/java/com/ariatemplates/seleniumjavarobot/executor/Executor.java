@@ -21,10 +21,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.UnreachableBrowserException;
@@ -48,7 +51,6 @@ public class Executor {
     }
 
     public static void startExecutor(final RemoteWebDriver driver, final Robot robot, final Point offset) throws InterruptedException {
-        driver.executeScript(EXECUTOR_SCRIPT);
         Map<String, Method> methods = new HashMap<String, Method>();
 
         methods.put("mouseMove", new Method() {
@@ -122,10 +124,14 @@ public class Executor {
             }
         });
 
+        driver.manage().timeouts().setScriptTimeout(1, TimeUnit.HOURS);
         while (true) {
-            List<Map<String, Object>> calls = null;
+            System.out.println("Loading the robot in the page.");
             try {
-                calls = (List<Map<String, Object>>) driver.executeScript("return window.SeleniumJavaRobot.__getCalls();");
+                driver.executeScript(EXECUTOR_SCRIPT);
+            } catch (UnhandledAlertException e) {
+                System.out.println("Alert in the page: " + e.getAlertText());
+                continue;
             } catch (UnreachableBrowserException e) {
                 System.out.println("The browser exited.");
                 return;
@@ -133,43 +139,45 @@ public class Executor {
                 System.out.println("The browser window was closed.");
                 return;
             } catch (WebDriverException e) {
-                // probable navigation to another page
-                System.out.println("Reloading the robot in the new page.");
-                driver.executeScript(EXECUTOR_SCRIPT);
-                continue;
+                System.err.println(e);
+                return;
             }
-            if (calls != null && !calls.isEmpty()) {
-                executeCalls(calls, driver, methods);
-            } else {
-                // take some rest when there is nothing to do
-                // (avoids wasting the whole CPU time for nothing)
-                Thread.sleep(100);
+            while (true) {
+                Map<String, Object> curCall = null;
+                try {
+                    curCall = (Map<String, Object>) driver.executeAsyncScript("return window.SeleniumJavaRobot.__getCall(arguments[0]);");
+                } catch (UnhandledAlertException e) {
+                    System.out.println("Alert in the page: " + e.getAlertText());
+                    continue;
+                } catch (TimeoutException e) {
+                    continue;
+                } catch (WebDriverException e) {
+                    // probable navigation to another page
+                    break;
+                }
+                executeCall(curCall, driver, methods);
             }
         }
     }
 
-    private static void executeCalls(List<Map<String, Object>> calls, RemoteWebDriver driver, Map<String, Method> methods) {
-        Iterator<Map<String, Object>> it = calls.iterator();
-        while (it.hasNext()) {
+    private static void executeCall(Map<String, Object> curCall, RemoteWebDriver driver, Map<String, Method> methods) {
+        try {
+            String curEventName = (String) curCall.get("name");
+            String callbackId = (String) curCall.get("cb");
+            List<Object> args = (List<Object>) curCall.get("args");
+            Method curMethod = methods.get(curEventName);
+            System.out.println(String.format("Executing %s (%s)", curEventName, args));
+            Object result;
+            boolean success = false;
             try {
-                Map<String, Object> çurCall = it.next();
-                String curEventName = (String) çurCall.get("name");
-                String callbackId = (String) çurCall.get("cb");
-                List<Object> args = (List<Object>) çurCall.get("args");
-                Method curMethod = methods.get(curEventName);
-                System.out.println(String.format("Executing %s (%s)", curEventName, args));
-                Object result;
-                boolean success = false;
-                try {
-                    result = curMethod.run(args);
-                    success = true;
-                } catch (Exception e) {
-                    result = e.toString();
-                }
-                driver.executeScript("window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2])", callbackId, success, result);
+                result = curMethod.run(args);
+                success = true;
             } catch (Exception e) {
-                System.err.println(e);
+                result = e.toString();
             }
+            driver.executeScript("window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2])", callbackId, success, result);
+        } catch (Exception e) {
+            System.err.println(e);
         }
     }
 }

@@ -17,12 +17,21 @@ var callbackCounter = 0;
 var callbacks = {};
 var calls = [];
 var slice = calls.slice;
+var notifyJava = null;
+
+var notifyJavaIfNeeded = function () {
+    if (notifyJava && calls.length > 0) {
+        var fn = notifyJava;
+        var arg = calls.shift();
+        notifyJava = null;
+        fn(arg);
+    }
+};
 
 var SeleniumJavaRobot = window.SeleniumJavaRobot = {
-    __getCalls : function () {
-        var oldCalls = calls;
-        calls = [];
-        return oldCalls;
+    __getCall : function (cb) {
+        notifyJava = cb;
+        notifyJavaIfNeeded();
     },
     __callback : function (callbackId, success, result) {
         var curCallback = callbacks[callbackId];
@@ -46,6 +55,7 @@ var createFunction = function (name, argsNumber) {
             args : slice.call(arguments, 0, argsNumber)
         });
         callbacks[callbackId] = arguments[argsNumber];
+        notifyJavaIfNeeded();
     };
 };
 
