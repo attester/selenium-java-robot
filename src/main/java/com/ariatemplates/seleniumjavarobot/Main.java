@@ -37,6 +37,7 @@ public class Main {
     public final static List<String> BROWSERS_LIST = Arrays.asList(BrowserType.FIREFOX, BrowserType.SAFARI, BrowserType.CHROME, BrowserType.IE);
 
     public static void main(String[] args) throws Exception {
+        boolean autoRestart = false;
         String browser = "";
         if (OS.isFamilyMac()) {
             browser = "safari";
@@ -45,7 +46,7 @@ public class Main {
         }
         String url = "http://localhost:7777/__attester__/slave.html";
         String usageString = String
-                .format("Usage: java -jar selenium-java-robot.jar [options]\nOptions:\n  --url <url> [default: %s]\n  --browser <browser> [default: %s]\n\nAccepted browser values: %s",
+                .format("Usage: java -jar selenium-java-robot.jar [options]\nOptions:\n  --auto-restart\n  --url <url> [default: %s]\n  --browser <browser> [default: %s]\n\nAccepted browser values: %s",
                         url, browser, BROWSERS_LIST.toString());
         for (int i = 0, l = args.length; i < l; i++) {
             String curParam = args[i];
@@ -55,17 +56,21 @@ public class Main {
             } else if ("--url".equalsIgnoreCase(curParam) && i + 1 < l) {
                 url = args[i + 1];
                 i++;
+            } else if ("--auto-restart".equalsIgnoreCase(curParam)) {
+                autoRestart = true;
             } else if ("--help".equalsIgnoreCase(curParam)) {
                 System.out.println(usageString);
                 return;
             }
         }
-        RemoteWebDriver driver = createWebDriver(browser);
-        startDriver(driver, url);
-        try {
-            driver.quit();
-        } catch (Exception e) {
-        }
+        do {
+            RemoteWebDriver driver = createWebDriver(browser);
+            startDriver(driver, url);
+            try {
+                driver.quit();
+            } catch (Exception e) {
+            }
+        } while (autoRestart);
         System.exit(0);
     }
 
