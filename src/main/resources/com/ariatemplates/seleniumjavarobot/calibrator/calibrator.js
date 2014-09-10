@@ -57,11 +57,13 @@ var height = element.offsetHeight;
 var borderElement = iFrameDoc.createElement("div");
 style = borderElement.style;
 style.position = "absolute";
+style.backgroundColor = backgroundColor;
 style.border = borderWidth + "px solid rgb(100,100,100)";
 style.left = style.top = "0px";
 style.width = (width - 2 * borderWidth) + "px";
 style.height = (height - 2 * borderWidth) + "px";
 iFrameDoc.body.appendChild(borderElement);
+style.zoom = 1;
 
 return {
     width : width,
