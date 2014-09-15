@@ -27,7 +27,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.exec.OS;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.internal.ProfilesIni;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -117,7 +120,15 @@ public class Main {
     public static RemoteWebDriver createWebDriver(String browser) {
         RemoteWebDriver driver;
         if (BrowserType.FIREFOX.equalsIgnoreCase(browser)) {
-            driver = new FirefoxDriver();
+            FirefoxProfile firefoxProfile = null;
+            String firefoxProfileProperty = System.getProperty("webdriver.firefox.profile");
+            if (firefoxProfileProperty == null) {
+                ProfilesIni allProfiles = new ProfilesIni();
+                // Use the default profile to make extensions available,
+                // and especially to ease debugging with Firebug
+                firefoxProfile = allProfiles.getProfile("default");
+            }
+            driver = new FirefoxDriver(firefoxProfile);
         } else if (BrowserType.SAFARI.equalsIgnoreCase(browser)) {
             driver = new SafariDriver();
         } else if (BrowserType.CHROME.equalsIgnoreCase(browser)) {
