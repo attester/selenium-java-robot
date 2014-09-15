@@ -20,6 +20,9 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.exec.OS;
 import org.openqa.selenium.Point;
@@ -63,14 +66,30 @@ public class Main {
                 return;
             }
         }
+        ThreadPoolExecutor quitExecutor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
         do {
-            RemoteWebDriver driver = createWebDriver(browser);
-            startDriver(driver, url);
+            final RemoteWebDriver driver = createWebDriver(browser);
             try {
-                driver.quit();
+                startDriver(driver, url);
             } catch (Exception e) {
+                e.printStackTrace();
             }
+            quitExecutor.execute(new Runnable() {
+                public void run() {
+                    // Makes sure the driver is closed. This is done
+                    // asynchronously so that we don't loose too much time
+                    // when --auto-restart is used, because the quit method
+                    // can take a long time to finish in case the browser
+                    // crashed or was terminated forcefully.
+                    try {
+                        driver.quit();
+                    } catch (Exception e) {
+                    }
+                }
+            });
         } while (autoRestart);
+        quitExecutor.shutdown();
+        quitExecutor.awaitTermination(1, TimeUnit.MINUTES);
         System.exit(0);
     }
 

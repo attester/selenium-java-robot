@@ -18,7 +18,6 @@ package com.ariatemplates.seleniumjavarobot.executor;
 import java.awt.Robot;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +27,6 @@ import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.UnhandledAlertException;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
@@ -138,7 +136,7 @@ public class Executor {
             } catch (NoSuchWindowException e) {
                 System.out.println("The browser window was closed.");
                 return;
-            } catch (WebDriverException e) {
+            } catch (Exception e) {
                 System.err.println(e);
                 return;
             }
@@ -151,7 +149,7 @@ public class Executor {
                     continue;
                 } catch (TimeoutException e) {
                     continue;
-                } catch (WebDriverException e) {
+                } catch (Exception e) {
                     // probable navigation to another page
                     break;
                 }
