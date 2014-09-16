@@ -5,7 +5,8 @@
 /.settings
 /dependency-reduced-pom.xml
 
-/node_modules
-/selenium-java-robot.jar
+/src
+/pom.xml
+/.gitattributes
+/.npmignore
 /IEDriverServer.zip
-/IEDriverServer.exe

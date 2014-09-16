@@ -6,27 +6,23 @@ to generate keyboard and mouse events at the operating system level.
 This is especially useful when writing tests for your application, to simulate
 actions from the user.
 
-## How to compile this tool
+## Installing this tool
 
-Before compiling this tool, you need [a Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-and [Maven](http://maven.apache.org/) to be installed on your computer.
+Before installing this tool, please make sure [node.js](http://nodejs.org/), [npm](https://www.npmjs.org/doc/README.html)
+and [Java](https://java.com/download) are installed on your computer.
 
-Then you can simply execute the following command from the root directory of your clone
-of this repository:
-
-```
-mvn clean install
-```
-
-This will create a file called `selenium-java-robot-VERSION.jar` in the `target`
-directory (with `VERSION` replaced by the current version number).
-
-## How to use this tool
-
-Execute the `selenium-java-robot-VERSION.jar` file (with `VERSION` replaced by the current version number):
+Then, this tool can be installed with the following command line:
 
 ```
-java -jar target/selenium-java-robot-VERSION.jar
+npm install -g selenium-java-robot
+```
+
+## Command line usage
+
+Execute the `selenium-java-robot` command:
+
+```
+selenium-java-robot
 ```
 
 Here is the list of accepted options:
@@ -39,27 +35,24 @@ Replace `<browserName>` with the name of one of the following accepted browsers:
 
 * `Safari` (default value on Mac OS)
 
-* `Chrome`: for this browser to work, it is needed to download
-[the chrome driver](http://chromedriver.storage.googleapis.com/index.html)
-and to set its path with `-Dwebdriver.chrome.driver=` on the command line. For example:
+* `Chrome`
 
-```
-java "-Dwebdriver.chrome.driver=c:\downloads\chromedriver.exe" -jar target/selenium-java-robot-VERSION.jar --browser chrome
-```
-
-* `Internet Explorer`: for this browser to work, it is needed to download
-[the IE driver server](http://selenium-release.storage.googleapis.com/index.html)
-and to set its path with `-Dwebdriver.ie.driver=` on the command line. For example:
-
-```
-java "-Dwebdriver.ie.driver=c:\downloads\IEDriverServer.exe" -jar target/selenium-java-robot-VERSION.jar --browser "internet explorer"
-```
+* `Internet Explorer`
 
 **`--url <initialUrl>`**
 
 Replace `<initialUrl>` with the URL to initially load in the browser.
 The default URL is `http://localhost:7777/__attester__/slave.html` which corresponds to the default URL of [attester](https://github.com/attester/attester),
 when running it locally.
+
+**`--auto-restart`**
+
+This option makes sure the browser is automatically restarted in case it is closed.
+The browser is restarted at the URL specified by the --url parameter.
+
+**`--help`**
+
+If this option is present, the list of accepted options is displayed and the *Selenium Java Robot* exits without starting a browser.
 
 ## Calibration
 
@@ -104,7 +97,7 @@ You can find in this section the description of the methods available on the `Se
 Note that most of those methods are simply a bridge to the corresponding method in the
 [Java Robot](http://docs.oracle.com/javase/6/docs/api/java/awt/Robot.html).
 
-* getOffset (callback: Callback)
+* `getOffset (callback: Callback)`
 
 Returns the coordinates of the top left corner of the viewport in the screen, as detected during the calibration phase.
 
@@ -119,16 +112,16 @@ SeleniumJavaRobot.getOffset({
 })
 ```
 
-* mouseMove (x: Number, y: Number, callback: Callback)
+* `mouseMove (x: Number, y: Number, callback: Callback)`
 
 Instantly moves the mouse to the specified `x`, `y` screen coordinates.
 
-* smoothMouseMove (fromX: Number, fromY: Number, toX: Number, toY: Number, duration: Number, callback: Callback)
+* `smoothMouseMove (fromX: Number, fromY: Number, toX: Number, toY: Number, duration: Number, callback: Callback)`
 
 Instantly moves the mouse to the specified `fromX`, `fromY` screen coordinates, then smoothly moves the mouse
 from there to the `toX`, `toY` screen coordinates. The duration of the move must be expressed in milliseconds.
 
-* mousePress (buttons: Number, callback: Callback)
+* `mousePress (buttons: Number, callback: Callback)`
 
 Presses one or more mouse buttons. The mouse buttons should be released using the mouseRelease method.
 The `buttons` parameter can be a combination (with the logical OR operator `a | b`) of one or more of the following flags:
@@ -145,26 +138,40 @@ For example, to press both the button 1 and button 2 of the mouse at the same ti
 SeleniumJavaRobot.mousePress(16 | 8);
 ```
 
-* mouseRelease (buttons: Number, callback: Callback)
+* `mouseRelease (buttons: Number, callback: Callback)`
 
 Releases one or more mouse buttons.
 
-* mouseWheel (amount: Number, callback: Callback)
+* `mouseWheel (amount: Number, callback: Callback)`
 
 Rotates the scroll wheel on wheel-equipped mice.
 
 The `amount` parameter is the number of "notches" to move the mouse wheel Negative values indicate movement up/away from the user,
 positive values indicate movement down/towards the user.
 
-* keyPress (keyCode: Number, callback: Callback)
+* `keyPress (keyCode: Number, callback: Callback)`
 
 Presses a given key. The key should be released using the keyRelease method.
 Valid key codes are the constants starting with `VK_` as listed in
 [this Java documentation](http://docs.oracle.com/javase/6/docs/api/constant-values.html#java.awt.event.KeyEvent.VK_0).
 
-* keyRelease (keyCode: Number, callback: Callback)
+* `keyRelease (keyCode: Number, callback: Callback)`
 
 Releases a given key.
+
+## How to recompile this tool
+
+Before compiling this tool, you need [a Java JDK](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+and [Maven](http://maven.apache.org/) to be installed on your computer.
+
+Then you can simply execute the following command from the root directory of your clone
+of this repository:
+
+```
+npm install
+```
+
+This will install dependencies and compile the *Selenium Java Robot* tool.
 
 ## How it is implemented
 
@@ -174,3 +181,7 @@ The [Java Robot class](http://docs.oracle.com/javase/6/docs/api/java/awt/Robot.h
 mouse events to the operating system, and to perform the screen capture for the calibration.
 
 For more information about the implementation, do not hesitate to have a look at the source code in this repository.
+
+## License
+
+[Apache License 2.0](LICENSE)

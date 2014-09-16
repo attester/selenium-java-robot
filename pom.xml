@@ -3,8 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ariatemplates</groupId>
 	<artifactId>selenium-java-robot</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>Selenium Java Robot</name>
+	<properties>
+		<seleniumVersion>2.43</seleniumVersion>
+		<seleniumRevision>0</seleniumRevision>
+		<seleniumFullVersion>${seleniumVersion}.${seleniumRevision}</seleniumFullVersion>
+	</properties>
 	<build>
 		<plugins>
 			<plugin>
@@ -32,18 +37,47 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<!-- Copy the output file so that it is published on npm -->
+								<copy
+									file="${project.build.directory}/${project.build.finalName}.jar"
+									tofile="${project.artifactId}.jar"></copy>
+								<!-- Downloads and extracts the IEDriverServer.exe file -->
+								<get usetimestamp="true"
+									src="http://selenium-release.storage.googleapis.com/${seleniumVersion}/IEDriverServer_Win32_${seleniumFullVersion}.zip"
+									dest="IEDriverServer.zip" />
+								<unzip overwrite="false" src="IEDriverServer.zip" dest="${basedir}">
+									<patternset>
+										<include name="IEDriverServer.exe" />
+									</patternset>
+								</unzip>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-java</artifactId>
-			<version>2.43.0</version>
+			<version>${seleniumFullVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-firefox-driver</artifactId>
-			<version>2.43.0</version>
+			<version>${seleniumFullVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.directory.studio</groupId>

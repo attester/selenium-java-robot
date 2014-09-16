@@ -1,0 +1,26 @@
+{
+  "name": "selenium-java-robot",
+  "version": "0.0.1",
+  "description": "Tool allowing JavaScripts scripts running in a browser to generate keyboard and mouse events at the operating system level, especially for automated tests.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ariatemplates/selenium-java-robot.git"
+  },
+  "index": "index.js",
+  "bin": {
+    "selenium-java-robot": "bin/selenium-java-robot"
+  },
+  "scripts": {
+    "prepublish": "mvn clean package"
+  },
+  "author": "ariatemplates <contact@ariatemplates.com> (http://github.com/ariatemplates)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ariatemplates/selenium-java-robot/issues"
+  },
+  "homepage": "https://github.com/ariatemplates/selenium-java-robot",
+  "dependencies": {
+    "chromedriver": "^2.10.0-1",
+    "which": "^1.0.5"
+  }
+}

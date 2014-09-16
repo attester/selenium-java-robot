@@ -3,3 +3,5 @@
 *.java   text
 *.js     text
 *.xml    text
+*.json   text
+*.md     text

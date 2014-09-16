@@ -52,7 +52,7 @@ public class Main {
         }
         String url = "http://localhost:7777/__attester__/slave.html";
         String usageString = String
-                .format("Usage: java -jar selenium-java-robot.jar [options]\nOptions:\n  --auto-restart\n  --url <url> [default: %s]\n  --browser <browser> [default: %s]\n\nAccepted browser values: %s",
+                .format("Usage: selenium-java-robot [options]\nOptions:\n  --auto-restart\n  --url <url> [default: %s]\n  --browser <browser> [default: %s]\n\nAccepted browser values: %s",
                         url, browser, BROWSERS_LIST.toString());
         for (int i = 0, l = args.length; i < l; i++) {
             String curParam = args[i];
