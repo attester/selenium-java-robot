@@ -15,7 +15,6 @@
 
 package com.ariatemplates.seleniumjavarobot.executor;
 
-import java.awt.Robot;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +29,10 @@ import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
+import com.ariatemplates.seleniumjavarobot.IRobot;
+import com.ariatemplates.seleniumjavarobot.RobotizedWebDriver;
+import com.ariatemplates.seleniumjavarobot.SeleniumJavaRobot;
+
 public class Executor {
     private static final String EXECUTOR_SCRIPT;
     static {
@@ -41,140 +44,171 @@ public class Executor {
     }
 
     private static interface Method {
-        Object run(List<Object> arguments) throws Exception;
+        Object run(Executor executor, List<Object> arguments) throws InterruptedException;
     }
 
     private static int toInt(Object value) {
         return ((Number) value).intValue();
     }
 
-    public static void startExecutor(final RemoteWebDriver driver, final Robot robot, final Point offset) throws InterruptedException {
-        Map<String, Method> methods = new HashMap<String, Method>();
-
+    private static final Map<String, Method> methods;
+    static {
+        methods = new HashMap<String, Executor.Method>();
         methods.put("mouseMove", new Method() {
-            public Object run(List<Object> arguments) {
+            public Object run(Executor executor, List<Object> arguments) {
                 int x = toInt(arguments.get(0));
                 int y = toInt(arguments.get(1));
-                robot.mouseMove(x, y);
+                executor.robot.mouseMove(x, y);
                 return null;
             }
         });
 
         methods.put("smoothMouseMove", new Method() {
-            public Object run(List<Object> arguments) throws Exception {
+            public Object run(Executor executor, List<Object> arguments) throws InterruptedException {
                 int fromX = toInt(arguments.get(0));
                 int fromY = toInt(arguments.get(1));
                 int toX = toInt(arguments.get(2));
                 int toY = toInt(arguments.get(3));
                 int duration = toInt(arguments.get(4));
-                SmoothMouseMove.smoothMouseMove(robot, fromX, fromY, toX, toY, duration);
+                SmoothMouseMove.smoothMouseMove(executor.robot, fromX, fromY, toX, toY, duration);
                 return null;
             }
         });
 
         methods.put("mousePress", new Method() {
-            public Object run(List<Object> arguments) {
+            public Object run(Executor executor, List<Object> arguments) {
                 int buttons = toInt(arguments.get(0));
-                robot.mousePress(buttons);
+                executor.robot.mousePress(buttons);
                 return null;
             }
         });
 
         methods.put("mouseRelease", new Method() {
-            public Object run(List<Object> arguments) {
+            public Object run(Executor executor, List<Object> arguments) {
                 int buttons = toInt(arguments.get(0));
-                robot.mouseRelease(buttons);
+                executor.robot.mouseRelease(buttons);
                 return null;
             }
         });
 
         methods.put("mouseWheel", new Method() {
-            public Object run(List<Object> arguments) {
+            public Object run(Executor executor, List<Object> arguments) {
                 int amount = toInt(arguments.get(0));
-                robot.mouseWheel(amount);
+                executor.robot.mouseWheel(amount);
                 return null;
             }
         });
 
         methods.put("keyPress", new Method() {
-            public Object run(List<Object> arguments) {
+            public Object run(Executor executor, List<Object> arguments) {
                 int keyCode = toInt(arguments.get(0));
-                robot.keyPress(keyCode);
+                executor.robot.keyPress(keyCode);
                 return null;
             }
         });
 
         methods.put("keyRelease", new Method() {
-            public Object run(List<Object> arguments) {
+            public Object run(Executor executor, List<Object> arguments) {
                 int keyCode = toInt(arguments.get(0));
-                robot.keyRelease(keyCode);
+                executor.robot.keyRelease(keyCode);
                 return null;
             }
         });
 
         methods.put("getOffset", new Method() {
-            public Object run(List<Object> arguments) {
-                Point point = driver.manage().window().getPosition();
+            public Object run(Executor executor, List<Object> arguments) {
+                Point point = executor.driver.manage().window().getPosition();
                 Map<String, Number> map = new HashMap<String, Number>();
-                map.put("x", offset.x + point.x);
-                map.put("y", offset.y + point.y);
+                map.put("x", executor.offset.x + point.x);
+                map.put("y", executor.offset.y + point.y);
                 return map;
             }
         });
 
-        driver.manage().timeouts().setScriptTimeout(1, TimeUnit.HOURS);
+    }
+
+    private final RobotizedWebDriver robotizedWebDriver;
+    private final IRobot robot;
+    private final RemoteWebDriver driver;
+    private Point offset;
+
+    public Executor(RobotizedWebDriver robotizedWebDriver, Point offset) {
+        this.robotizedWebDriver = robotizedWebDriver;
+        this.robot = robotizedWebDriver.robot;
+        this.driver = robotizedWebDriver.webDriver;
+        this.offset = offset;
+    }
+
+    public void run() throws InterruptedException {
+        driver.manage().timeouts().setScriptTimeout(1, TimeUnit.SECONDS);
         while (true) {
-            System.out.println("Loading the robot in the page.");
+            boolean scriptExecuted = false;
             try {
-                driver.executeScript(EXECUTOR_SCRIPT);
+                synchronized (robotizedWebDriver) {
+                    if (robotizedWebDriver.isStopped()) {
+                        return;
+                    }
+                    SeleniumJavaRobot.log("Loading the robot in the page.");
+                    driver.executeScript(EXECUTOR_SCRIPT);
+                }
+                scriptExecuted = true;
+                while (true) {
+                    if (robotizedWebDriver.isStopped()) {
+                        return;
+                    }
+                    Map<String, Object> curCall = null;
+                    try {
+                        // don't use synchronized(robotizedWebDriver) here,
+                        // as this call can block for a long time
+                        curCall = (Map<String, Object>) driver.executeAsyncScript("return window.SeleniumJavaRobot.__getCall(arguments[0]);");
+                    } catch (TimeoutException e) {
+                        continue;
+                    } catch (UnhandledAlertException e) {
+                        SeleniumJavaRobot.log("Alert in the page: " + e.getAlertText());
+                        continue;
+                    }
+                    executeCall(curCall);
+                }
             } catch (UnhandledAlertException e) {
-                System.out.println("Alert in the page: " + e.getAlertText());
+                SeleniumJavaRobot.log("Alert in the page: " + e.getAlertText());
                 continue;
             } catch (UnreachableBrowserException e) {
-                System.out.println("The browser exited.");
+                SeleniumJavaRobot.log("The browser exited.");
                 return;
             } catch (NoSuchWindowException e) {
-                System.out.println("The browser window was closed.");
+                SeleniumJavaRobot.log("The browser window was closed.");
                 return;
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
+                if (scriptExecuted) {
+                    // this may be a page change
+                    // try to re-execute the script
+                    continue;
+                }
                 System.err.println(e);
                 return;
-            }
-            while (true) {
-                Map<String, Object> curCall = null;
-                try {
-                    curCall = (Map<String, Object>) driver.executeAsyncScript("return window.SeleniumJavaRobot.__getCall(arguments[0]);");
-                } catch (UnhandledAlertException e) {
-                    System.out.println("Alert in the page: " + e.getAlertText());
-                    continue;
-                } catch (TimeoutException e) {
-                    continue;
-                } catch (Exception e) {
-                    // probable navigation to another page
-                    break;
-                }
-                executeCall(curCall, driver, methods);
             }
         }
     }
 
-    private static void executeCall(Map<String, Object> curCall, RemoteWebDriver driver, Map<String, Method> methods) {
+    private void executeCall(Map<String, Object> curCall) throws InterruptedException {
         try {
             String curEventName = (String) curCall.get("name");
             String callbackId = (String) curCall.get("cb");
             List<Object> args = (List<Object>) curCall.get("args");
             Method curMethod = methods.get(curEventName);
-            System.out.println(String.format("Executing %s (%s)", curEventName, args));
+            SeleniumJavaRobot.log(String.format("Executing %s (%s)", curEventName, args));
             Object result;
             boolean success = false;
             try {
-                result = curMethod.run(args);
+                result = curMethod.run(this, args);
                 success = true;
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 result = e.toString();
             }
-            driver.executeScript("window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2])", callbackId, success, result);
-        } catch (Exception e) {
+            synchronized (robotizedWebDriver) {
+                driver.executeScript("window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2])", callbackId, success, result);
+            }
+        } catch (RuntimeException e) {
             System.err.println(e);
         }
     }

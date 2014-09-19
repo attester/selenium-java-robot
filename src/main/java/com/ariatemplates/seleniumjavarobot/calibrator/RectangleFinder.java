@@ -17,8 +17,9 @@ package com.ariatemplates.seleniumjavarobot.calibrator;
 
 import java.awt.Color;
 import java.awt.Rectangle;
-import java.awt.Robot;
 import java.awt.image.BufferedImage;
+
+import com.ariatemplates.seleniumjavarobot.IRobot;
 
 public class RectangleFinder {
     private BufferedImage image;
@@ -29,7 +30,7 @@ public class RectangleFinder {
     private int expectedWidth;
     private int expectedHeight;
 
-    public static Rectangle findRectangle(Robot robot, Color color, Rectangle initRectangle, int minWidth, int minHeight, int colorTolerance) {
+    public static Rectangle findRectangle(IRobot robot, Color color, Rectangle initRectangle, int minWidth, int minHeight, int colorTolerance) {
         BufferedImage capture = robot.createScreenCapture(initRectangle);
         RectangleFinder finder = new RectangleFinder(capture, color, minWidth, minHeight, colorTolerance);
         Rectangle result = finder.findRectangle();

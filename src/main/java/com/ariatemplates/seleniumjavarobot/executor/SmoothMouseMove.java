@@ -15,10 +15,10 @@
 
 package com.ariatemplates.seleniumjavarobot.executor;
 
-import java.awt.Robot;
+import com.ariatemplates.seleniumjavarobot.IRobot;
 
 public class SmoothMouseMove {
-    public static void smoothMouseMove(Robot robot, int fromX, int fromY, int toX, int toY, int duration) throws InterruptedException {
+    public static void smoothMouseMove(IRobot robot, int fromX, int fromY, int toX, int toY, int duration) throws InterruptedException {
         robot.mouseMove(fromX, fromY);
         double currentTime = System.currentTimeMillis();
         double endTime = currentTime + duration;
