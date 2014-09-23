@@ -5,3 +5,4 @@
 *.xml    text
 *.json   text
 *.md     text
+/bin/*   eol=lf
