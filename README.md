@@ -58,6 +58,14 @@ If this option is present, the list of accepted options is displayed and the *Se
 
 If this option is present, the version of the *Selenium Java Robot* is displayed and the *Selenium Java Robot* exits without starting a browser.
 
+**`-DpropertyName=value`**
+
+This option allows to set a Java system property before launching the browser. This parameter can be repeated multiple times to set different properties.
+Different Selenium drivers use different Java system properties. Please refer to the corresponding documentation:
+* [Firefox](https://code.google.com/p/selenium/wiki/FirefoxDriver)
+* [Safari](https://code.google.com/p/selenium/wiki/SafariDriver)
+* [Internet Explorer](https://code.google.com/p/selenium/wiki/InternetExplorerDriver)
+
 ## Calibration
 
 Once the *Selenium Java Robot* starts, it first tries to detect the position of the viewport inside the browser window by displaying

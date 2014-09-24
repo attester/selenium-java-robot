@@ -19,12 +19,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.exec.OS;
 import org.openqa.selenium.remote.BrowserType;
 
 public class Main {
     public final static List<String> BROWSERS_LIST = Arrays.asList(BrowserType.FIREFOX, BrowserType.SAFARI, BrowserType.CHROME, BrowserType.IE);
+    private final static Pattern SET_SYSTEM_PROPERTY_REGEXP = Pattern.compile("^-D([^=]+)=(.*)$", Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) throws Exception {
         SeleniumJavaRobot seleniumJavaRobot = new SeleniumJavaRobot();
@@ -37,7 +40,7 @@ public class Main {
         }
         seleniumJavaRobot.url = "http://localhost:7777/__attester__/slave.html";
         String usageString = String
-                .format("Usage: selenium-java-robot [options]\nOptions:\n  --auto-restart\n  --url <url> [default: %s]\n  --browser <browser> [default: %s]\n\nAccepted browser values: %s",
+                .format("Usage: selenium-java-robot [options]\nOptions:\n  --auto-restart\n  --url <url> [default: %s]\n  --browser <browser> [default: %s, accepted values: %s]\n  -DpropertyName=value",
                         seleniumJavaRobot.url, browser, BROWSERS_LIST.toString());
         for (int i = 0, l = args.length; i < l; i++) {
             String curParam = args[i];
@@ -56,9 +59,14 @@ public class Main {
                 System.out.println(usageString);
                 return;
             } else {
-                System.err.println("Unknown command line option: " + curParam);
-                System.err.println(usageString);
-                return;
+                Matcher matcher = SET_SYSTEM_PROPERTY_REGEXP.matcher(curParam);
+                if (matcher.matches()) {
+                    System.setProperty(matcher.group(1), matcher.group(2));
+                } else {
+                    System.err.println("Unknown command line option: " + curParam);
+                    System.err.println(usageString);
+                    return;
+                }
             }
         }
         seleniumJavaRobot.robotizedWebDriverFactory = LocalRobotizedWebDriverFactory.createRobotizedWebDriverFactory(browser);
