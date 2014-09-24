@@ -59,13 +59,6 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
 
     public RobotizedWebDriver createRobotizedWebDriver() {
         RemoteWebDriver driver = createWebDriver();
-        if (OS.isFamilyMac()) {
-            try {
-                // put the browser in the foreground:
-                Runtime.getRuntime().exec("open -a \"" + driver.getCapabilities().getBrowserName() + "\"");
-            } catch (Exception e) {
-            }
-        }
         driver.manage().window().maximize();
         return new RobotizedWebDriver(robot, driver);
     }
@@ -104,6 +97,23 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
         }
     }
 
+    public static class LocalSafari extends LocalRobotizedWebDriverFactory {
+        @Override
+        public RemoteWebDriver createWebDriver() {
+            SafariDriver safari = new SafariDriver();
+            if (OS.isFamilyMac()) {
+                try {
+                    // put the browser in the foreground:
+                    String cmdline = "open -a safari";
+                    SeleniumJavaRobot.log("Executing: " + cmdline);
+                    Runtime.getRuntime().exec(cmdline);
+                } catch (Exception e) {
+                }
+            }
+            return safari;
+        }
+    }
+
     public static LocalRobotizedWebDriverFactory createRobotizedWebDriverFactory(String browser) {
         if (BrowserType.FIREFOX.equalsIgnoreCase(browser)) {
             FirefoxProfile firefoxProfile = null;
@@ -116,7 +126,7 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
             }
             return new LocalFirefox(firefoxProfile);
         } else if (BrowserType.SAFARI.equalsIgnoreCase(browser)) {
-            return new LocalBrowser<SafariDriver>(SafariDriver.class);
+            return new LocalSafari();
         } else if (BrowserType.CHROME.equalsIgnoreCase(browser)) {
             return new LocalBrowser<ChromeDriver>(ChromeDriver.class);
         } else if (BrowserType.IE.equalsIgnoreCase(browser)) {
