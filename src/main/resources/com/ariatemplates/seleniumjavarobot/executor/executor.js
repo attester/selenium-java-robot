@@ -43,6 +43,11 @@ if (!SeleniumJavaRobot) {
             if (curCall && calls[0].call.id == callId) {
                 calls.shift();
                 var curCallback = curCall.callback;
+                if (typeof curCallback == "function") {
+                    curCallback = {
+                        fn : curCallback
+                    };
+                }
                 if (curCallback && typeof curCallback.fn == "function") {
                     curCallback.fn.call(curCallback.scope, {
                         success : success,

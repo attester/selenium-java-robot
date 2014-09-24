@@ -69,9 +69,9 @@ It contains some methods which can be called to simulate keyboard and mouse even
 
 ### Callback
 
-Each method on the `SeleniumJavaRobot` object accepts a callback object as its last parameter, to be notified when
-the corresponding operation is done. When the callback object is provided (which is optional), it is expected to
-have the following structure:
+Each method on the `SeleniumJavaRobot` object accepts a callback as its last parameter, to be notified when
+the corresponding operation is done. When the callback is provided (which is optional), it is expected to
+be either a simple function, or an object with the following structure:
 
 ```js
 {
