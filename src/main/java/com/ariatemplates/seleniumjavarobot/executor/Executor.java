@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
@@ -26,6 +27,7 @@ import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.UnhandledAlertException;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
@@ -127,6 +129,37 @@ public class Executor {
 
     }
 
+    private static final Map<String, String> knownExceptions;
+    static {
+        knownExceptions = new HashMap<String, String>();
+
+        // Exceptions when DevTools are opened in Chrome:
+        // this one (what's after "disconnected: " may vary) happens at the time the DevTools are opened
+        knownExceptions.put("disconnected: ", "DevTools are opened. The Selenium Java Robot is paused until DevTools are closed.");
+        // the following one happens for each call until  the DevTools are closed:
+        knownExceptions.put("unknown error: Runtime.evaluate threw exception: TypeError: Cannot read property 'click' of null", null);
+
+        // Exceptions when unloading the page:
+        String unloadingPage = "Page was unloaded.";
+        knownExceptions.put("javascript error: document unloaded", unloadingPage); // Chrome
+        knownExceptions.put("Detected a page unload event", unloadingPage); // Firefox
+        knownExceptions.put("Page reload detected", unloadingPage); // IE
+    }
+
+    private static final boolean handleException(WebDriverException exception) {
+        String message = exception.getMessage();
+        for (Entry<String, String> entry : knownExceptions.entrySet()) {
+            if (message.startsWith(entry.getKey())) {
+                String replacementMessage = entry.getValue();
+                if (replacementMessage != null) {
+                    SeleniumJavaRobot.log(replacementMessage);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     private final RobotizedWebDriver robotizedWebDriver;
     private final IRobot robot;
     private final RemoteWebDriver driver;
@@ -141,34 +174,23 @@ public class Executor {
 
     public void run() throws InterruptedException {
         driver.manage().timeouts().setScriptTimeout(1, TimeUnit.SECONDS);
+        boolean expectsStatus = true;
         while (true) {
-            boolean scriptExecuted = false;
             try {
-                synchronized (robotizedWebDriver) {
-                    if (robotizedWebDriver.isStopped()) {
-                        return;
-                    }
-                    SeleniumJavaRobot.log("Loading the robot in the page.");
-                    driver.executeScript(EXECUTOR_SCRIPT);
+                if (robotizedWebDriver.isStopped()) {
+                    return;
                 }
-                scriptExecuted = true;
-                while (true) {
-                    if (robotizedWebDriver.isStopped()) {
-                        return;
-                    }
-                    Map<String, Object> curCall = null;
-                    try {
-                        // don't use synchronized(robotizedWebDriver) here,
-                        // as this call can block for a long time
-                        curCall = (Map<String, Object>) driver.executeAsyncScript("return window.SeleniumJavaRobot.__getCall(arguments[0]);");
-                    } catch (TimeoutException e) {
-                        continue;
-                    } catch (UnhandledAlertException e) {
-                        SeleniumJavaRobot.log("Alert in the page: " + e.getAlertText());
-                        continue;
-                    }
+                @SuppressWarnings("unchecked")
+                Map<String, Object> curCall = (Map<String, Object>) driver.executeAsyncScript(EXECUTOR_SCRIPT, expectsStatus);
+                if (expectsStatus) {
+                    expectsStatus = false;
+                    SeleniumJavaRobot.log("The Selenium Java Robot is now enabled in the current page.");
+                }
+                if (curCall != null) {
                     executeCall(curCall);
                 }
+            } catch (TimeoutException e) {
+                continue;
             } catch (UnhandledAlertException e) {
                 SeleniumJavaRobot.log("Alert in the page: " + e.getAlertText());
                 continue;
@@ -178,12 +200,18 @@ public class Executor {
             } catch (NoSuchWindowException e) {
                 SeleniumJavaRobot.log("The browser window was closed.");
                 return;
-            } catch (RuntimeException e) {
-                if (scriptExecuted) {
-                    // this may be a page change
-                    // try to re-execute the script
-                    continue;
+            } catch (WebDriverException e) {
+                if (handleException(e)) {
+                    Thread.sleep(100);
+                } else {
+                    System.err.println(e);
+                    if (expectsStatus) {
+                        return;
+                    }
                 }
+                expectsStatus = true;
+                continue;
+            } catch (RuntimeException e) {
                 System.err.println(e);
                 return;
             }
@@ -193,7 +221,8 @@ public class Executor {
     private void executeCall(Map<String, Object> curCall) throws InterruptedException {
         try {
             String curEventName = (String) curCall.get("name");
-            String callbackId = (String) curCall.get("cb");
+            String id = (String) curCall.get("id");
+            @SuppressWarnings("unchecked")
             List<Object> args = (List<Object>) curCall.get("args");
             Method curMethod = methods.get(curEventName);
             SeleniumJavaRobot.log(String.format("Executing %s (%s)", curEventName, args));
@@ -206,7 +235,7 @@ public class Executor {
                 result = e.toString();
             }
             synchronized (robotizedWebDriver) {
-                driver.executeScript("window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2])", callbackId, success, result);
+                driver.executeScript("try { window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2]); } catch(e){}", id, success, result);
             }
         } catch (RuntimeException e) {
             System.err.println(e);

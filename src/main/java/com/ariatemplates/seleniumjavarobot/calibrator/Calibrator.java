@@ -49,6 +49,7 @@ public class Calibrator {
 
     public static Point calibrate(RobotizedWebDriver robotizedWebDriver, Color calibrationColor, int colorTolerance) throws InterruptedException {
         // call the calibration script:
+        @SuppressWarnings("unchecked")
         Map<String, Long> jsInfos = (Map<String, Long>) robotizedWebDriver.webDriver.executeScript(CALIBRATOR_SCRIPT,
                 String.format("rgb(%d,%d,%d)", calibrationColor.getRed(), calibrationColor.getGreen(), calibrationColor.getBlue()), BORDER);
         int width = jsInfos.get("width").intValue();
