@@ -20,6 +20,8 @@
 					<archive>
 						<manifest>
 							<mainClass>com.ariatemplates.seleniumjavarobot.Main</mainClass>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 						</manifest>
 					</archive>
 				</configuration>

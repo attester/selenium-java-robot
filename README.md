@@ -54,6 +54,10 @@ The browser is restarted at the URL specified by the --url parameter.
 
 If this option is present, the list of accepted options is displayed and the *Selenium Java Robot* exits without starting a browser.
 
+**`--version`**
+
+If this option is present, the version of the *Selenium Java Robot* is displayed and the *Selenium Java Robot* exits without starting a browser.
+
 ## Calibration
 
 Once the *Selenium Java Robot* starts, it first tries to detect the position of the viewport inside the browser window by displaying

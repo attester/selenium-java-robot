@@ -49,8 +49,15 @@ public class Main {
                 i++;
             } else if ("--auto-restart".equalsIgnoreCase(curParam)) {
                 seleniumJavaRobot.autoRestart = true;
+            } else if ("--version".equalsIgnoreCase(curParam)) {
+                System.out.println(Main.class.getPackage().getImplementationVersion());
+                return;
             } else if ("--help".equalsIgnoreCase(curParam)) {
                 System.out.println(usageString);
+                return;
+            } else {
+                System.err.println("Unknown command line option: " + curParam);
+                System.err.println(usageString);
                 return;
             }
         }
