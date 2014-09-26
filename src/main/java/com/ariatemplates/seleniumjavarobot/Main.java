@@ -26,7 +26,7 @@ import org.apache.commons.exec.OS;
 import org.openqa.selenium.remote.BrowserType;
 
 public class Main {
-    public final static List<String> BROWSERS_LIST = Arrays.asList(BrowserType.FIREFOX, BrowserType.SAFARI, BrowserType.CHROME, BrowserType.IE);
+    public final static List<String> BROWSERS_LIST = Arrays.asList(BrowserType.FIREFOX, BrowserType.SAFARI, BrowserType.CHROME, "chrome-debug", BrowserType.IE);
     private final static Pattern SET_SYSTEM_PROPERTY_REGEXP = Pattern.compile("^-D([^=]+)=(.*)$", Pattern.CASE_INSENSITIVE);
 
     public static void main(String[] args) throws Exception {
