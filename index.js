@@ -20,7 +20,9 @@ var chromeDriverPath = require("chromedriver").path;
 
 var jar = path.join(__dirname, "selenium-java-robot.jar");
 var ieDriverServer = path.join(__dirname, "IEDriverServer.exe");
-var javaArgs = ["-Dwebdriver.chrome.driver=" + chromeDriverPath, "-Dwebdriver.ie.driver=" + ieDriverServer, "-jar", jar];
+var chromeDebug = path.join(__dirname, "chrome-debug");
+var javaArgs = ["-Dwebdriver.chrome.driver=" + chromeDriverPath, "-Dwebdriver.ie.driver=" + ieDriverServer,
+        "-Dseleniumjavarobot.chrome.debugextension=" + chromeDebug, "-jar", jar];
 
 module.exports = {
     jar : jar,

@@ -120,6 +120,13 @@ public abstract class LocalRobotizedBrowserFactory implements IRobotizedBrowserF
         }
     }
 
+    public static class LocalDebuggableChrome extends LocalRobotizedBrowserFactory {
+        @Override
+        protected IBrowser createBrowser() {
+            return new DebuggableChrome();
+        }
+    }
+
     public static LocalRobotizedBrowserFactory createRobotizedWebDriverFactory(String browser) {
         if (BrowserType.FIREFOX.equalsIgnoreCase(browser)) {
             FirefoxProfile firefoxProfile = null;
@@ -135,6 +142,8 @@ public abstract class LocalRobotizedBrowserFactory implements IRobotizedBrowserF
             return new LocalSafari();
         } else if (BrowserType.CHROME.equalsIgnoreCase(browser)) {
             return new LocalBrowser<ChromeDriver>(ChromeDriver.class);
+        } else if ("chrome-debug".equalsIgnoreCase(browser)) {
+            return new LocalDebuggableChrome();
         } else if (BrowserType.IE.equalsIgnoreCase(browser)) {
             return new LocalBrowser<InternetExplorerDriver>(InternetExplorerDriver.class);
         } else {

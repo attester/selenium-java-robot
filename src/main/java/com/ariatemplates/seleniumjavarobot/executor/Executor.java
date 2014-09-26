@@ -136,7 +136,8 @@ public class Executor {
         // Exceptions when DevTools are opened in Chrome:
         // this one (what's after "disconnected: " may vary) happens at the time
         // the DevTools are opened
-        knownExceptions.put("disconnected: ", "DevTools are opened. The Selenium Java Robot is paused until DevTools are closed.");
+        knownExceptions.put("disconnected: ",
+                "DevTools are opened. The Selenium Java Robot is paused until DevTools are closed. For easier debugging, please use: --browser chrome-debug");
         // the following one happens for each call until the DevTools are
         // closed:
         knownExceptions.put("unknown error: Runtime.evaluate threw exception: TypeError: Cannot read property 'click' of null", null);

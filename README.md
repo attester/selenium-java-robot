@@ -35,7 +35,9 @@ Replace `<browserName>` with the name of one of the following accepted browsers:
 
 * `Safari` (default value on Mac OS)
 
-* `Chrome`
+* `Chrome` or `Chrome-debug` (using `Chrome-debug` is much slower than using `Chrome`,
+but `Chrome-debug` allows DevTools to be open, where as `Chrome` does not support it,
+see [here](https://sites.google.com/a/chromium.org/chromedriver/help/devtools-window-keeps-closing) for a technical explanation)
 
 * `Internet Explorer`
 
