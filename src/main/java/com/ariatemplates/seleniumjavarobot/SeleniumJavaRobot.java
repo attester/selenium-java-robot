@@ -27,7 +27,7 @@ public class SeleniumJavaRobot {
     // Public options (not supposed to be changed after calling start):
     public String url;
     public boolean autoRestart;
-    public IRobotizedWebDriverFactory robotizedWebDriverFactory;
+    public IRobotizedBrowserFactory robotizedBrowserFactory;
 
     // Private fields:
     private final Thread mainThread = createMainThread();
@@ -35,7 +35,7 @@ public class SeleniumJavaRobot {
 
     private final Object lock = new Object();
     // The previous lock object is a lock for the following 2 fields:
-    private RobotizedWebDriver robotizedWebDriver;
+    private RobotizedBrowser robotizedBrowser;
     private boolean stopped = false;
 
     public void start() {
@@ -48,8 +48,8 @@ public class SeleniumJavaRobot {
                 log("Closing ...");
             }
             stopped = true;
-            if (robotizedWebDriver != null) {
-                robotizedWebDriver.stop();
+            if (robotizedBrowser != null) {
+                robotizedBrowser.stop();
             }
         }
         mainThread.join();
@@ -59,23 +59,23 @@ public class SeleniumJavaRobot {
         Thread result = new Thread(new Runnable() {
             public void run() {
                 do {
-                    RobotizedWebDriver robotizedWebDriver = null;
+                    RobotizedBrowser robotizedBrowser = null;
                     try {
                         synchronized (lock) {
                             if (stopped) {
                                 break;
                             }
-                            robotizedWebDriver = robotizedWebDriverFactory.createRobotizedWebDriver();
-                            SeleniumJavaRobot.this.robotizedWebDriver = robotizedWebDriver;
+                            robotizedBrowser = robotizedBrowserFactory.createRobotizedBrowser();
+                            SeleniumJavaRobot.this.robotizedBrowser = robotizedBrowser;
                         }
-                        startDriver(robotizedWebDriver, url);
+                        startDriver(robotizedBrowser, url);
                     } catch (RuntimeException e) {
                         e.printStackTrace();
                     } catch (InterruptedException e) {
                         break;
                     } finally {
-                        if (robotizedWebDriver != null) {
-                            stopBrowserLater(robotizedWebDriver);
+                        if (robotizedBrowser != null) {
+                            stopBrowserLater(robotizedBrowser);
                         }
                     }
                 } while (autoRestart);
@@ -91,7 +91,7 @@ public class SeleniumJavaRobot {
         return result;
     }
 
-    private void stopBrowserLater(final RobotizedWebDriver robotizedWebDriver) {
+    private void stopBrowserLater(final RobotizedBrowser robotizedBrowser) {
         quitExecutor.execute(new Runnable() {
             public void run() {
                 // Makes sure the driver is closed. This is done
@@ -100,16 +100,16 @@ public class SeleniumJavaRobot {
                 // because the quit method can take a long time
                 // to finish in case the browser crashed or was
                 // terminated forcefully.
-                robotizedWebDriver.stop();
+                robotizedBrowser.stop();
             }
         });
     }
 
-    public static void startDriver(RobotizedWebDriver robotizedWebDriver, String url) throws InterruptedException {
-        Point offset = Calibrator.calibrate(robotizedWebDriver);
+    public static void startDriver(RobotizedBrowser robotizedBrowser, String url) throws InterruptedException {
+        Point offset = Calibrator.calibrate(robotizedBrowser);
         log("Computed offset: " + offset);
-        robotizedWebDriver.webDriver.get(url);
-        Executor executor = new Executor(robotizedWebDriver, offset);
+        robotizedBrowser.browser.get(url);
+        Executor executor = new Executor(robotizedBrowser, offset);
         executor.run();
     }
 

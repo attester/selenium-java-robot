@@ -69,7 +69,7 @@ public class Main {
                 }
             }
         }
-        seleniumJavaRobot.robotizedWebDriverFactory = LocalRobotizedWebDriverFactory.createRobotizedWebDriverFactory(browser);
+        seleniumJavaRobot.robotizedBrowserFactory = LocalRobotizedBrowserFactory.createRobotizedWebDriverFactory(browser);
         seleniumJavaRobot.start();
         closeOnStreamEnd(seleniumJavaRobot, System.in);
         closeOnProcessEnd(seleniumJavaRobot);

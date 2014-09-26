@@ -23,9 +23,8 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriver.Window;
 
-import com.ariatemplates.seleniumjavarobot.RobotizedWebDriver;
+import com.ariatemplates.seleniumjavarobot.RobotizedBrowser;
 import com.ariatemplates.seleniumjavarobot.SeleniumJavaRobot;
 
 public class Calibrator {
@@ -43,27 +42,26 @@ public class Calibrator {
     private static final int DEFAULT_COLOR_TOLERANCE = 50;
     private static final int BORDER = 10;
 
-    public static Point calibrate(RobotizedWebDriver driver) throws InterruptedException {
-        return calibrate(driver, DEFAULT_CALIBRATION_COLOR, DEFAULT_COLOR_TOLERANCE);
+    public static Point calibrate(RobotizedBrowser robotizedBrowser) throws InterruptedException {
+        return calibrate(robotizedBrowser, DEFAULT_CALIBRATION_COLOR, DEFAULT_COLOR_TOLERANCE);
     }
 
-    public static Point calibrate(RobotizedWebDriver robotizedWebDriver, Color calibrationColor, int colorTolerance) throws InterruptedException {
+    public static Point calibrate(RobotizedBrowser robotizedBrowser, Color calibrationColor, int colorTolerance) throws InterruptedException {
         // call the calibration script:
         @SuppressWarnings("unchecked")
-        Map<String, Long> jsInfos = (Map<String, Long>) robotizedWebDriver.webDriver.executeScript(CALIBRATOR_SCRIPT,
+        Map<String, Long> jsInfos = (Map<String, Long>) robotizedBrowser.browser.executeScript(CALIBRATOR_SCRIPT,
                 String.format("rgb(%d,%d,%d)", calibrationColor.getRed(), calibrationColor.getGreen(), calibrationColor.getBlue()), BORDER);
         int width = jsInfos.get("width").intValue();
         int height = jsInfos.get("height").intValue();
         SeleniumJavaRobot.log(String.format("Viewport size: %d x %d", width, height));
-        Window window = robotizedWebDriver.webDriver.manage().window();
-        Point windowPosition = window.getPosition();
-        Dimension windowSize = window.getSize();
+        Point windowPosition = robotizedBrowser.browser.getWindowPosition();
+        Dimension windowSize = robotizedBrowser.browser.getWindowSize();
         Rectangle windowRectangle = new Rectangle(windowPosition.x, windowPosition.y, windowSize.width, windowSize.height);
         SeleniumJavaRobot.log("Browser window rectangle: " + windowRectangle);
         // Give some time to the browser to display the expected color:
         Thread.sleep(200);
         // look for the rectangle full of the expected color:
-        Rectangle rect = RectangleFinder.findRectangle(robotizedWebDriver.robot, calibrationColor, windowRectangle, width - 2 * BORDER, height - 2 * BORDER,
+        Rectangle rect = RectangleFinder.findRectangle(robotizedBrowser.robot, calibrationColor, windowRectangle, width - 2 * BORDER, height - 2 * BORDER,
                 colorTolerance);
         if (rect == null) {
             throw new RuntimeException("Calibration failed.");

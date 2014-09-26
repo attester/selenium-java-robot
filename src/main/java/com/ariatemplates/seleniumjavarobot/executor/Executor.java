@@ -28,11 +28,11 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.UnhandledAlertException;
 import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.UnreachableBrowserException;
 
+import com.ariatemplates.seleniumjavarobot.IBrowser;
 import com.ariatemplates.seleniumjavarobot.IRobot;
-import com.ariatemplates.seleniumjavarobot.RobotizedWebDriver;
+import com.ariatemplates.seleniumjavarobot.RobotizedBrowser;
 import com.ariatemplates.seleniumjavarobot.SeleniumJavaRobot;
 
 public class Executor {
@@ -119,7 +119,7 @@ public class Executor {
 
         methods.put("getOffset", new Method() {
             public Object run(Executor executor, List<Object> arguments) {
-                Point point = executor.driver.manage().window().getPosition();
+                Point point = executor.driver.getWindowPosition();
                 Map<String, Number> map = new HashMap<String, Number>();
                 map.put("x", executor.offset.x + point.x);
                 map.put("y", executor.offset.y + point.y);
@@ -134,9 +134,11 @@ public class Executor {
         knownExceptions = new HashMap<String, String>();
 
         // Exceptions when DevTools are opened in Chrome:
-        // this one (what's after "disconnected: " may vary) happens at the time the DevTools are opened
+        // this one (what's after "disconnected: " may vary) happens at the time
+        // the DevTools are opened
         knownExceptions.put("disconnected: ", "DevTools are opened. The Selenium Java Robot is paused until DevTools are closed.");
-        // the following one happens for each call until  the DevTools are closed:
+        // the following one happens for each call until the DevTools are
+        // closed:
         knownExceptions.put("unknown error: Runtime.evaluate threw exception: TypeError: Cannot read property 'click' of null", null);
 
         // Exceptions when unloading the page:
@@ -160,24 +162,24 @@ public class Executor {
         return false;
     }
 
-    private final RobotizedWebDriver robotizedWebDriver;
+    private final RobotizedBrowser robotizedBrowser;
     private final IRobot robot;
-    private final RemoteWebDriver driver;
+    private final IBrowser driver;
     private Point offset;
 
-    public Executor(RobotizedWebDriver robotizedWebDriver, Point offset) {
-        this.robotizedWebDriver = robotizedWebDriver;
-        this.robot = robotizedWebDriver.robot;
-        this.driver = robotizedWebDriver.webDriver;
+    public Executor(RobotizedBrowser robotizedBrowser, Point offset) {
+        this.robotizedBrowser = robotizedBrowser;
+        this.robot = robotizedBrowser.robot;
+        this.driver = robotizedBrowser.browser;
         this.offset = offset;
     }
 
     public void run() throws InterruptedException {
-        driver.manage().timeouts().setScriptTimeout(1, TimeUnit.SECONDS);
+        driver.setScriptTimeout(1, TimeUnit.SECONDS);
         boolean expectsStatus = true;
         while (true) {
             try {
-                if (robotizedWebDriver.isStopped()) {
+                if (robotizedBrowser.isStopped()) {
                     return;
                 }
                 @SuppressWarnings("unchecked")
@@ -234,7 +236,7 @@ public class Executor {
             } catch (RuntimeException e) {
                 result = e.toString();
             }
-            synchronized (robotizedWebDriver) {
+            synchronized (robotizedBrowser) {
                 driver.executeScript("try { window.SeleniumJavaRobot.__callback(arguments[0], arguments[1], arguments[2]); } catch(e){}", id, success, result);
             }
         } catch (RuntimeException e) {

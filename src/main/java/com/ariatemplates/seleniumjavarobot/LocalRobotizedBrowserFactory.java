@@ -30,7 +30,7 @@ import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 
-public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDriverFactory {
+public abstract class LocalRobotizedBrowserFactory implements IRobotizedBrowserFactory {
 
     private IRobot robot;
 
@@ -46,7 +46,7 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
         }
     }
 
-    public LocalRobotizedWebDriverFactory() {
+    public LocalRobotizedBrowserFactory() {
         try {
             robot = new LocalRobot(new Robot());
         } catch (AWTException e) {
@@ -55,15 +55,21 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
         numLockStateWorkaround();
     }
 
-    public abstract RemoteWebDriver createWebDriver();
-
-    public RobotizedWebDriver createRobotizedWebDriver() {
-        RemoteWebDriver driver = createWebDriver();
-        driver.manage().window().maximize();
-        return new RobotizedWebDriver(robot, driver);
+    protected RemoteWebDriver createWebDriver() {
+        throw new UnsupportedOperationException();
     }
 
-    public static class LocalFirefox extends LocalRobotizedWebDriverFactory {
+    protected IBrowser createBrowser() {
+        RemoteWebDriver driver = createWebDriver();
+        driver.manage().window().maximize();
+        return new RemoteWebDriverBrowser(driver);
+    }
+
+    public RobotizedBrowser createRobotizedBrowser() {
+        return new RobotizedBrowser(robot, createBrowser());
+    }
+
+    public static class LocalFirefox extends LocalRobotizedBrowserFactory {
         private final FirefoxProfile firefoxProfile;
 
         public LocalFirefox(FirefoxProfile firefoxProfile) {
@@ -76,7 +82,7 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
         }
     }
 
-    public static class LocalBrowser<T extends RemoteWebDriver> extends LocalRobotizedWebDriverFactory {
+    public static class LocalBrowser<T extends RemoteWebDriver> extends LocalRobotizedBrowserFactory {
         private final Constructor<T> webdriverClass;
 
         public LocalBrowser(Class<T> webdriverClass) {
@@ -97,7 +103,7 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
         }
     }
 
-    public static class LocalSafari extends LocalRobotizedWebDriverFactory {
+    public static class LocalSafari extends LocalRobotizedBrowserFactory {
         @Override
         public RemoteWebDriver createWebDriver() {
             SafariDriver safari = new SafariDriver();
@@ -114,7 +120,7 @@ public abstract class LocalRobotizedWebDriverFactory implements IRobotizedWebDri
         }
     }
 
-    public static LocalRobotizedWebDriverFactory createRobotizedWebDriverFactory(String browser) {
+    public static LocalRobotizedBrowserFactory createRobotizedWebDriverFactory(String browser) {
         if (BrowserType.FIREFOX.equalsIgnoreCase(browser)) {
             FirefoxProfile firefoxProfile = null;
             String firefoxProfileProperty = System.getProperty("webdriver.firefox.profile");

@@ -14,19 +14,17 @@
  */
 package com.ariatemplates.seleniumjavarobot;
 
-import org.openqa.selenium.remote.RemoteWebDriver;
-
-public class RobotizedWebDriver {
+public class RobotizedBrowser {
     private boolean stopped;
     public final IRobot robot;
-    public final RemoteWebDriver webDriver;
+    public final IBrowser browser;
 
-    public RobotizedWebDriver(IRobot robot, RemoteWebDriver webDriver) {
-        if (robot == null || webDriver == null) {
+    public RobotizedBrowser(IRobot robot, IBrowser browser) {
+        if (robot == null || browser == null) {
             throw new NullPointerException();
         }
         this.robot = robot;
-        this.webDriver = webDriver;
+        this.browser = browser;
     }
 
     public synchronized boolean isStopped() {
@@ -37,7 +35,7 @@ public class RobotizedWebDriver {
         if (!stopped) {
             stopped = true;
             try {
-                webDriver.quit();
+                browser.quit();
             } catch (RuntimeException e) {
             }
         }

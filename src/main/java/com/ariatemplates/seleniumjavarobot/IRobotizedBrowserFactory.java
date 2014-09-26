@@ -14,6 +14,6 @@
  */
 package com.ariatemplates.seleniumjavarobot;
 
-public interface IRobotizedWebDriverFactory {
-    public RobotizedWebDriver createRobotizedWebDriver();
+public interface IRobotizedBrowserFactory {
+    public RobotizedBrowser createRobotizedBrowser();
 }
