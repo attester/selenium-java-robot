@@ -38,7 +38,7 @@ public class Calibrator {
 
         }
     }
-    private static final Color DEFAULT_CALIBRATION_COLOR = new Color(237, 22, 31);
+    private static final Color DEFAULT_CALIBRATION_COLOR = new Color(255, 0, 0);
     private static final int DEFAULT_COLOR_TOLERANCE = 50;
     private static final int BORDER = 10;
 
@@ -59,7 +59,7 @@ public class Calibrator {
         Rectangle windowRectangle = new Rectangle(windowPosition.x, windowPosition.y, windowSize.width, windowSize.height);
         SeleniumJavaRobot.log("Browser window rectangle: " + windowRectangle);
         // Give some time to the browser to display the expected color:
-        Thread.sleep(200);
+        Thread.sleep(500);
         // look for the rectangle full of the expected color:
         Rectangle rect = RectangleFinder.findRectangle(robotizedBrowser.robot, calibrationColor, windowRectangle, width - 2 * BORDER, height - 2 * BORDER,
                 colorTolerance);
