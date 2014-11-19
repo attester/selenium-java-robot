@@ -1,6 +1,6 @@
 {
   "name": "selenium-java-robot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Tool allowing JavaScripts scripts running in a browser to generate keyboard and mouse events at the operating system level, especially for automated tests.",
   "repository": {
     "type": "git",
