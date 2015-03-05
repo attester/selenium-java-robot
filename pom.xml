@@ -6,7 +6,7 @@
 	<version>0.0.5</version>
 	<name>Selenium Java Robot</name>
 	<properties>
-		<seleniumVersion>2.43</seleniumVersion>
+		<seleniumVersion>2.45</seleniumVersion>
 		<seleniumRevision>0</seleniumRevision>
 		<seleniumFullVersion>${seleniumVersion}.${seleniumRevision}</seleniumFullVersion>
 	</properties>
