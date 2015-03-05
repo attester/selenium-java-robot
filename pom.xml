@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ariatemplates</groupId>
 	<artifactId>selenium-java-robot</artifactId>
-	<version>0.0.5</version>
+	<version>0.0.6</version>
 	<name>Selenium Java Robot</name>
 	<properties>
 		<seleniumVersion>2.45</seleniumVersion>
