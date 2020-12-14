@@ -13,7 +13,7 @@
   "scripts": {
     "prepublish": "mvn clean package"
   },
-  "author": "ariatemplates <contact@ariatemplates.com> (http://github.com/ariatemplates)",
+  "author": "ariatemplates <ariatemplates@amadeus.com> (http://github.com/ariatemplates)",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/ariatemplates/selenium-java-robot/issues"
